@@ -1,0 +1,40 @@
+@host = http://localhost:5105
+
+### Cluster topology
+GET {{host}}/cluster/nodes
+
+### Set a few keys and watch them land on different masters
+PUT {{host}}/cache/user:1
+Content-Type: application/json
+
+{ "value": "Vishesh" }
+
+###
+PUT {{host}}/cache/user:2
+Content-Type: application/json
+
+{ "value": "Alice" }
+
+###
+PUT {{host}}/cache/session:abc
+Content-Type: application/json
+
+{ "value": "token-123", "ttlSeconds": 30 }
+
+### Conditional write: second call returns 409
+PUT {{host}}/cache/lock:order-42
+Content-Type: application/json
+
+{ "value": "worker-1", "ttlSeconds": 60, "onlyIfNotExists": true }
+
+### Read, TTL, delete
+GET {{host}}/cache/user:1
+
+###
+GET {{host}}/cache/session:abc/ttl
+
+###
+DELETE {{host}}/cache/user:2
+
+### Which node owns a key?
+GET {{host}}/cluster/where/user:1
